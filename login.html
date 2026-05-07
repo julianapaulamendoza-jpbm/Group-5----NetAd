@@ -1,0 +1,107 @@
+<!-- SUCCESS OVERLAY -->
+<div class="success-overlay" id="successOverlay"></div>
+
+<!-- LOGIN CARD -->
+<div class="card" id="loginCard">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 48 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="6" y="10" width="26" height="16" rx="3" fill="#111111"/>
+        <circle cx="32" cy="18" r="5" fill="#111111"/>
+        <circle cx="32" cy="18" r="2.5" fill="#444444"/>
+        <rect x="12" y="4" width="4" height="8" rx="1.5" fill="#111111"/>
+        <rect x="8" y="2" width="12" height="4" rx="2" fill="#111111"/>
+        <path d="M6 18 Q2 18 2 22 L2 30" stroke="#111111" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+        <circle cx="36" cy="14" r="1.2" fill="#333"/>
+        <circle cx="38" cy="18" r="1.2" fill="#333"/>
+        <circle cx="36" cy="22" r="1.2" fill="#333"/>
+      </svg>
+    </div>
+    <div class="logo-text"><span>SECURE</span>WATCH</div>
+  </div>
+
+  <form id="loginForm" novalidate>
+    <div class="form-group">
+      <input type="email" id="emailInput" placeholder="Email Address" autocomplete="email" />
+      <div class="error-msg" id="emailError">Please enter a valid email address.</div>
+    </div>
+    <div class="form-group">
+      <input type="password" id="passwordInput" placeholder="Password" autocomplete="current-password" />
+      <button type="button" class="toggle-pw" id="togglePw" aria-label="Toggle password visibility">
+        <svg id="eyeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+      </button>
+      <div class="error-msg" id="passwordError">Password must be at least 6 characters.</div>
+    </div>
+    <button type="submit" class="btn-login" id="loginBtn">
+      <span class="btn-text">Login</span>
+      <span class="btn-spinner"><span class="spinner-ring"></span></span>
+    </button>
+  </form>
+  <div class="forgot"><a href="#">Forgot Password?</a></div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard" id="dashboard">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <svg viewBox="0 0 48 36" fill="none" width="28" height="21">
+        <rect x="6" y="10" width="26" height="16" rx="3" fill="#fff"/>
+        <circle cx="32" cy="18" r="5" fill="#fff"/>
+        <circle cx="32" cy="18" r="2.5" fill="#aaa"/>
+      </svg>
+      <span><b>SECURE</b>WATCH</span>
+    </div>
+    <nav>
+      <a href="#" class="nav-item active">■ Dashboard</a>
+      <a href="#" class="nav-item">📷 Camera Feeds</a>
+      <a href="#" class="nav-item">📄 Monitoring Logs</a>
+      <a href="#" class="nav-item">⚙ System Settings</a>
+    </nav>
+  </div>
+  <div class="main">
+    <div class="topbar">
+      <h1>Dashboard</h1>
+      <button id="logoutBtn">→ Logout</button>
+    </div>
+    <div class="camera-grid">
+      <div class="camera-feed">
+        <div class="live-badge">LIVE</div>
+        <div class="camera-screen">
+          <div class="cam-label">Camera 01 — Parking Lot</div>
+          <div class="cam-lines">
+            <div></div><div></div><div></div>
+            <div></div><div></div><div></div>
+          </div>
+          <div class="motion-alert" id="motionAlert">⚠ Motion Detected</div>
+        </div>
+        <div class="cam-controls">
+          <button onclick="toggleMotion()">👁 Simulate Motion</button>
+          <button onclick="toggleFeed()">▮▮ Pause Feed</button>
+          <span id="feedStatus">● Live</span>
+        </div>
+      </div>
+    </div>
+    <div class="overview">
+      <h2>System Overview</h2>
+      <div class="overview-cards">
+        <div class="ov-card">
+          <div class="ov-title">System Health</div>
+          <div class="ov-val green">✔ All Systems Normal</div>
+        </div>
+        <div class="ov-card">
+          <div class="ov-title">Active Cameras</div>
+          <div class="ov-val">1 Online</div>
+        </div>
+        <div class="ov-card">
+          <div class="ov-title">Recent Activity</div>
+          <div class="ov-log" id="activityLog">
+            <div>No activity yet</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
