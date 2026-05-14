@@ -6,7 +6,6 @@
   </head>
   <body>
 
-<!-- SUCCESS OVERLAY -->
 <div class="success-overlay" id="successOverlay"></div>
 
 <!-- LOGIN CARD -->
@@ -48,7 +47,6 @@
       <span class="btn-spinner"><span class="spinner-ring"></span></span>
     </button>
   </form>
-  <div class="forgot"><a href="#">Forgot Password?</a></div>
 </div>
 
 <!-- DASHBOARD -->
@@ -65,38 +63,35 @@
     <nav>
       <a href="#" class="nav-item active">■ Dashboard</a>
       <a href="#" class="nav-item" onclick="showLogs()">📄 Monitoring Logs</a>
-      <a href="#" class="nav-item">⚙ System Settings</a>
     </nav>
   </div>
   <div class="main">
     <div class="topbar">
       <h1>Dashboard</h1>
-      <button id="logoutBtn">→ Logout</button>
-    </div>
-    <div class="camera-grid">
-      <div class="camera-feed">
-        <div class="live-badge">LIVE</div>
-        <div class="camera-screen">
-          <div class="cam-label">Camera 01 — Parking Lot</div>
-          <div class="motion-alert" id="motionAlert">⚠ Motion Detected</div>
-        </div>
-        <div class="cam-controls">
-          <button onclick="toggleMotion()">👁 Simulate Motion</button>
-          <button onclick="toggleFeed()">▮▮ Pause Feed</button>
-          <span id="feedStatus">● Live</span>
-        </div>
+      <div class="topbar-btns">
+        <button onclick="location.reload()">↺ Refresh</button>
+        <button id="logoutBtn">→ Logout</button>
       </div>
     </div>
-    <div class="overview">
-      <h2>System Overview</h2>
-      <div class="overview-cards">
-        <div class="ov-card">
-          <div class="ov-title">System Health</div>
-          <div class="ov-val green">✔ All Systems Normal</div>
+    <div class="dashboard-content">
+      <div class="dashboard-left">
+        <div class="camera-feed">
+         <div class="camera-screen">
+            <div class="live-badge">LIVE</div>
+            <div class="cam-label">Camera 01 — Parking Lot</div>
+            <div class="motion-alert" id="motionAlert">⚠ Motion Detected</div>
+         </div>
+         <div class="cam-controls">
+            <button onclick="toggleMotion()">👁 Simulate Motion</button>
+            <button onclick="toggleFeed()">▮▮ Pause Feed</button>
+          </div>
         </div>
+      </div>
+      <div class="dashboard-right">
         <div class="ov-card">
-          <div class="ov-title">Active Cameras</div>
-          <div class="ov-val">1 Online</div>
+          <div class="ov-title">INTRUSION ALERTS</div>
+          <div class="ov-val green">Email:</div>
+          <div class="ov-val green">IP Address:</div>
         </div>
         <div class="ov-card">
           <div class="ov-title">Recent Activity</div>
@@ -108,6 +103,7 @@
     </div>
   </div>
 </div>
+
 <!-- MONITORING LOGS -->
 <div class="logs-page" id="logsPage">
   <div class="sidebar">
@@ -121,8 +117,7 @@
     </div>
     <nav>
       <a href="#" class="nav-item" onclick="showDashboard()">■ Dashboard</a>
-      <a href="#" class="nav-item active" onclick="showLogs()">📄 Monitoring Logs</a>
-      <a href="#" class="nav-item">⚙ System Settings</a>
+      <a href="#" class="nav-item active">📄 Monitoring Logs</a>
     </nav>
   </div>
   <div class="main">
@@ -138,10 +133,13 @@
             <th>Time In</th>
             <th>Time Out</th>
             <th>Date</th>
+            <th>IP Address</th>
+            <th>Location</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody id="logsTableBody">
-          <tr><td colspan="4">No logs yet</td></tr>
+          <tr><td colspan="7">No logs yet</td></tr>
         </tbody>
       </table>
     </div>
