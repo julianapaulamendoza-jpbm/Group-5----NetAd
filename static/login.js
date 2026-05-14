@@ -74,9 +74,22 @@ form.addEventListener('submit', (e) => {
   currentLoginDate = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
   sessionLogs.push({
     user: emailInput.value,
-    timeIn: currentLoginTime,
-    timeOut: null,
-    date: currentLoginDate
+  timeIn: currentLoginTime,
+  timeOut: null,
+  date: currentLoginDate,
+  ip: 'Fetching...',
+  location: 'Fetching...',
+  action: 'Logged In'
+});
+
+// Fetch real IP and location
+fetch('https://ipapi.co/json/')
+  .then(res => res.json())
+  .then(data => {
+    const last = sessionLogs[sessionLogs.length - 1];
+    last.ip = data.ip;
+    last.location = data.city + ', ' + data.country_name;
+    renderLogs();
   });
   renderLogs();
   loginCard.style.display = 'none';
@@ -112,11 +125,10 @@ function toggleMotion() {
 
 function toggleFeed() {
   feedPaused = !feedPaused;
-  const status = document.getElementById('feedStatus');
   const btn = document.querySelector('.cam-controls button:last-of-type');
-  status.textContent = feedPaused ? '● Paused' : '● Live';
-  status.style.color = feedPaused ? '#cc2222' : '#00aa44';
-  btn.textContent = feedPaused ? '▶ Resume Feed' : '⏸ Pause Feed';
+  const cameraScreen = document.querySelector('.camera-screen');
+  btn.textContent = feedPaused ? '▶ Resume Feed' : '▮▮ Pause Feed';
+  cameraScreen.style.opacity = feedPaused ? '0.3' : '1';
 }
 
 function addActivity(msg) {
@@ -154,6 +166,9 @@ function renderLogs() {
       <td>${log.timeIn}</td>
       <td>${log.timeOut || '—'}</td>
       <td>${log.date}</td>
+      <td>${log.ip || '—'}</td>
+      <td>${log.location || '—'}</td>
+      <td>${log.action || '—'}</td>
     </tr>
   `).join('');
 }
