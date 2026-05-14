@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>SecureWatch</title>
+    <title>WatchmeWhip</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
   </head>
   <body>
@@ -25,7 +25,7 @@
         <circle cx="36" cy="22" r="1.2" fill="#333"/>
       </svg>
     </div>
-    <div class="logo-text"><span>SECURE</span>WATCH</div>
+    <div class="logo-text"><span>WATCHME</span>WHIP</div>
   </div>
 
   <form id="loginForm" novalidate>
@@ -60,12 +60,11 @@
         <circle cx="32" cy="18" r="5" fill="#fff"/>
         <circle cx="32" cy="18" r="2.5" fill="#aaa"/>
       </svg>
-      <span><b>SECURE</b>WATCH</span>
+      <span><b>WATCHME</b>WHIP</span>
     </div>
     <nav>
       <a href="#" class="nav-item active">■ Dashboard</a>
-      <a href="#" class="nav-item">📷 Camera Feeds</a>
-      <a href="#" class="nav-item">📄 Monitoring Logs</a>
+      <a href="#" class="nav-item" onclick="showLogs()">📄 Monitoring Logs</a>
       <a href="#" class="nav-item">⚙ System Settings</a>
     </nav>
   </div>
@@ -79,10 +78,6 @@
         <div class="live-badge">LIVE</div>
         <div class="camera-screen">
           <div class="cam-label">Camera 01 — Parking Lot</div>
-          <div class="cam-lines">
-            <div></div><div></div><div></div>
-            <div></div><div></div><div></div>
-          </div>
           <div class="motion-alert" id="motionAlert">⚠ Motion Detected</div>
         </div>
         <div class="cam-controls">
@@ -110,6 +105,45 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+<!-- MONITORING LOGS -->
+<div class="logs-page" id="logsPage">
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <svg viewBox="0 0 48 36" fill="none" width="28" height="21">
+        <rect x="6" y="10" width="26" height="16" rx="3" fill="#fff"/>
+        <circle cx="32" cy="18" r="5" fill="#fff"/>
+        <circle cx="32" cy="18" r="2.5" fill="#aaa"/>
+      </svg>
+      <span><b>WATCHME</b>WHIP</span>
+    </div>
+    <nav>
+      <a href="#" class="nav-item" onclick="showDashboard()">■ Dashboard</a>
+      <a href="#" class="nav-item active" onclick="showLogs()">📄 Monitoring Logs</a>
+      <a href="#" class="nav-item">⚙ System Settings</a>
+    </nav>
+  </div>
+  <div class="main">
+    <div class="topbar">
+      <h1>Monitoring Logs</h1>
+      <button id="logoutBtn2">→ Logout</button>
+    </div>
+    <div class="logs-content">
+      <table class="logs-table">
+        <thead>
+          <tr>
+            <th>User/Admin</th>
+            <th>Time In</th>
+            <th>Time Out</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="logsTableBody">
+          <tr><td colspan="4">No logs yet</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>
