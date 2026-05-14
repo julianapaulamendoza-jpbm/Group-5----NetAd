@@ -171,12 +171,13 @@ body::after {
   color: #555; transition: all 0.2s;
 }
 .topbar button:hover { background: #111; color: #fff; border-color: #111; }
+.topbar-btns { display: flex; gap: 8px; }
 
 .camera-grid { padding: 20px 24px 0; }
 .camera-feed {
-  background: #fff; border-radius: 8px;
+  background: #fff; border-radius: 10px;
   border: 1px solid #e0e0e0; overflow: hidden;
-  max-width: 480px;
+  max-width: 750px;
 }
 .camera-screen {
   background: #1a1a1a; aspect-ratio: 16/9;
@@ -222,6 +223,39 @@ body::after {
 .ov-val { font-size: 15px; font-weight: 600; color: #111; }
 .ov-val.green { color: #00aa44; }
 .ov-log { font-size: 11px; color: #555; line-height: 1.8; }
+
+/* --- DASHBOARD LAYOUT --- */
+.dashboard-content {
+  display: flex;
+  gap: 24px;
+  padding: 20px 24px;
+  height: calc(100vh - 60px);
+}
+
+.dashboard-left {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dashboard-left .camera-feed {
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.dashboard-left .camera-screen {
+  flex: 1;
+  aspect-ratio: unset;
+}
 
 /* --- MONITORING LOGS PAGE --- */
 .logs-page {
