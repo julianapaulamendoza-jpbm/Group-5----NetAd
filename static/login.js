@@ -57,6 +57,14 @@ form.addEventListener('submit', (e) => {
 
   if (!valid) return;
 
+  if (emailInput.value !== 'group5@securewatch.com' || passwordInput.value !== 'group5123') {
+    emailInput.classList.add('error-field');
+    passwordInput.classList.add('error-field');
+    emailError.textContent = 'Invalid credentials.';
+    emailError.classList.add('show');
+    return;
+  }
+
   loginBtn.classList.add('loading');
   loginBtn.disabled = true;
 
