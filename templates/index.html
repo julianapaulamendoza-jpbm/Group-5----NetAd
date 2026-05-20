@@ -69,7 +69,7 @@
     <div class="topbar">
       <h1>Dashboard</h1>
       <div class="topbar-btns">
-        <button onclick="location.reload()">↺ Refresh</button>
+        <button onclick="refreshDashboard()">↺ Refresh</button>
         <button id="logoutBtn">→ Logout</button>
       </div>
     </div>
@@ -80,7 +80,9 @@
             <div class="live-badge">LIVE</div>
             <div class="cam-label">Camera 01 — Parking Lot</div>
             <div class="motion-alert" id="motionAlert">⚠ Motion Detected</div>
-         </div>
+             <video id="camFeed" autoplay playsinline muted style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1; ">
+           </video>
+          </div>
          <div class="cam-controls">
             <button onclick="toggleMotion()">👁 Simulate Motion</button>
             <button onclick="toggleFeed()">▮▮ Pause Feed</button>
@@ -123,7 +125,10 @@
   <div class="main">
     <div class="topbar">
       <h1>Monitoring Logs</h1>
-      <button id="logoutBtn2">→ Logout</button>
+      <div class="topbar-btns">
+        <button onclick="renderLogs()">↺ Refresh</button>
+        <button id="logoutBtn2">→ Logout</button>
+     </div>
     </div>
     <div class="logs-content">
       <table class="logs-table">
