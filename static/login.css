@@ -187,7 +187,7 @@ body::after {
 }
 .cam-lines { position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1px; opacity: 0.06; }
 .cam-lines div { background: #fff; }
-.cam-label { position: absolute; bottom: 8px; left: 10px; color: #fff; font-size: 11px; opacity: 0.6; }
+.cam-label { position: absolute; bottom: 8px; left: 10px; color: #fff; font-size: 11px; opacity: 0.6;  z-index: 2; }
 .live-badge {
   position: absolute; top: 10px; right: 10px;
   background: #cc0000; color: #fff; font-size: 10px;
@@ -199,6 +199,7 @@ body::after {
   background: rgba(255,120,0,0.9); color: #fff;
   font-size: 11px; padding: 4px 10px; border-radius: 4px;
   display: none; animation: pulse 1s infinite;
+  z-index: 2;
 }
 .motion-alert.show { display: block; }
 @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
