@@ -94,6 +94,7 @@ fetch('https://ipapi.co/json/')
   renderLogs();
   loginCard.style.display = 'none';
   dashboard.classList.add('show');
+  startCamera();
 }, 1800);
 });
 
@@ -123,12 +124,48 @@ function toggleMotion() {
   if (motionOn) addActivity('Motion Detected — Camera 01');
 }
 
-function toggleFeed() {
+function toggleFeed() { 
+  const video = document.getElementById('camFeed');
+  if (!video || !video.srcObject) return; // ← stops if camera not started
   feedPaused = !feedPaused;
   const btn = document.querySelector('.cam-controls button:last-of-type');
-  const cameraScreen = document.querySelector('.camera-screen');
-  btn.textContent = feedPaused ? '▶ Resume Feed' : '▮▮ Pause Feed';
-  cameraScreen.style.opacity = feedPaused ? '0.3' : '1';
+  if (feedPaused) {
+    video.pause();
+    btn.textContent = '▶ Resume Feed';
+  } else {
+    video.play();
+    btn.textContent = '▮▮ Pause Feed';
+  }
+}
+    
+
+async function startCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    console.log('Stream obtained:', stream);
+    const video = document.getElementById('camFeed');
+    console.log('Video element:', video);
+    video.srcObject = stream;
+    video.onloadedmetadata = () => {
+      console.log('Video metadata loaded, playing...');
+      video.play();
+    };
+  } catch (err) {
+    console.error('Camera error:', err.name, err.message);
+  }
+}
+
+function refreshDashboard() {
+  // restart camera
+  startCamera();
+  // clear and reset activity log
+  const log = document.getElementById('activityLog');
+  log.innerHTML = '<div>No activity yet</div>';
+  // reset motion
+  motionOn = false;
+  feedPaused = false;
+  document.getElementById('motionAlert').classList.remove('show');
+  document.querySelector('.cam-controls button:last-of-type').textContent = '▮▮ Pause Feed';
 }
 
 function addActivity(msg) {
