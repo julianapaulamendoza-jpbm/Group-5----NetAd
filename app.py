@@ -49,10 +49,19 @@ def api_auth_login():
     client_location = data.get('location') or 'Unknown Location'
 
     # Secure Server-Side Verification
-    if email == 'group5@securewatch.com' and password == 'group5123':
+     valid_users = [
+        {'email': 'juliana@securewatch.com', 'password': 'tds4_sK26-X@7d'},
+        {'email': 'joshua@securewatch.com', 'password': '@bcD€FgH1jK'},
+        {'email': 'aya@securewatch.com', 'password': 'ay@<3-!'},
+        {'email': 'alexa@securewatch.com', 'password': 'Ax@mSk04gz!'},
+    ]
+
+    user_match = next((u for u in valid_users if u['email'] == email and u['password'] == password), None)
+
+      if user_match:
         session['authenticated'] = True  
         session['user'] = email
-        
+          
         new_log = Log(
             user_email=email,
             time_in=data.get('timeIn'),
