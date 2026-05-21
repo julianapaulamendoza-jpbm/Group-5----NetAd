@@ -7,8 +7,8 @@ app = Flask(__name__)
 # Cryptographic key to sign session cookies so they cannot be tampered with
 app.secret_key = 'super_secret_secure_watch_key_group_5'
 
-# Configure local PostgreSQL connection
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:group5@localhost:5432/watchmewhip'
+# Configure database dynamically (Uses Railway configuration online, falls back to local at home)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql://postgres:your_password@localhost:5432/watchmewhip')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
