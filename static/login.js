@@ -14,33 +14,44 @@ const logoutBtn2 = document.getElementById('logoutBtn2');
 
 let currentLogId = null; 
 
+// Helper function to format date/time to human-readable normal text
+function getFormattedDateTime() {
+  const now = new Date();
+  
+  // Format Time: 12:20 AM
+  let hours = now.getHours();
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const ampm = hours >= 12 ? 'PM' : 'AM';
+  hours = hours % 12;
+  hours = hours ? hours : 12; // conversion of 0 to 12
+  const currentTime = `${hours}:${minutes} ${ampm}`;
+
+  // Format Date: May 28, 2026
+  const currentDate = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  return { time: currentTime, date: currentDate };
+}
+
 // Helper function to force real public network credentials lookup
 async function fetchRealNetworkContext() {
   let ip = '127.0.0.1';
-  let location = 'Localhost System Admin';
   try {
     const res = await fetch('https://freeipapi.com/api/json');
     if (res.ok) {
       const data = await res.json();
       ip = data.ipAddress || ip;
-      if (data.cityName && data.countryName) {
-        location = `${data.cityName}, ${data.countryName}`;
-      }
     }
   } catch(e) {
     console.warn("External lookup limits encountered, falling back securely.");
   }
-  return { ip, location };
+  return { ip };
 }
 
 // Track each event step by step into its own unique, fresh line
 async function trackUserAction(actionDescription) {
   if (!currentLogId) return; 
 
-  const now = new Date();
-  const currentTime = now.toTimeString().slice(0,8);
-  const currentDate = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-
+  const dt = getFormattedDateTime();
   const network = await fetchRealNetworkContext();
 
   try {
@@ -48,16 +59,15 @@ async function trackUserAction(actionDescription) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        time: currentTime,
-        date: currentDate,
+        time: dt.time,
+        date: dt.date,
         ip: network.ip,
-        location: network.location,
         action: actionDescription 
       })
     });
     
     if (logsPage.classList.contains('show')) {
-      renderLogs();
+      renderLogs(false);
     }
   } catch (err) {
     console.error('Failed to report activity state:', err);
@@ -108,10 +118,7 @@ form.addEventListener('submit', async (e) => {
   loginBtn.classList.add('loading');
   loginBtn.disabled = true;
 
-  const now = new Date();
-  const currentLoginTime = now.toTimeString().slice(0,8);
-  const currentLoginDate = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-  
+  const dt = getFormattedDateTime();
   const network = await fetchRealNetworkContext();
 
   try {
@@ -121,10 +128,9 @@ form.addEventListener('submit', async (e) => {
       body: JSON.stringify({
         user: emailInput.value,
         password: passwordInput.value,
-        timeIn: currentLoginTime,
-        date: currentLoginDate,
-        ip: network.ip,
-        location: network.location
+        timeIn: dt.time,
+        date: dt.date,
+        ip: network.ip
       })
     });
 
@@ -132,7 +138,7 @@ form.addEventListener('submit', async (e) => {
 
     if (response.status === 200 && resData.status === 'success') {
       currentLogId = resData.log_id; 
-      renderLogs();
+      renderLogs(false);
       loginCard.style.display = 'none';
       dashboard.classList.add('show');
       startCamera();
@@ -152,16 +158,14 @@ form.addEventListener('submit', async (e) => {
 });
 
 async function handleLogout() {
-  const now = new Date();
-  const timeOut = now.toTimeString().slice(0,8);
-  const currentLoginDate = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const dt = getFormattedDateTime();
   const network = await fetchRealNetworkContext();
 
   try {
     await fetch('/api/auth/logout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ logId: currentLogId, timeOut: timeOut, date: currentLoginDate, ip: network.ip, location: network.location })
+      body: JSON.stringify({ logId: currentLogId, timeOut: dt.time, date: dt.date, ip: network.ip })
     });
   } catch (err) {
     console.error('Session clearance exception:', err);
@@ -254,7 +258,7 @@ function showLogs() {
   dashboard.classList.remove('show');
   logsPage.classList.add('show');
   trackUserAction("Opened Logs Page"); 
-  renderLogs();
+  renderLogs(false); // Set to false so opening the page doesn't log a backend refresh row
 }
 
 function showDashboard() {
@@ -263,18 +267,19 @@ function showDashboard() {
   trackUserAction("Returned to Camera Feed");
 }
 
-async function renderLogs() {
+async function renderLogs(isManualClick = false) {
   try {
-    const response = await fetch('/api/logs');
+    const dt = getFormattedDateTime();
+    const response = await fetch(`/api/logs?time=${encodeURIComponent(dt.time)}&date=${encodeURIComponent(dt.date)}&manual=${isManualClick}`);
     const logs = await response.json();
 
     if (response.status !== 200) {
-      logsTableBody.innerHTML = `<tr><td colspan="7" style="color:red; font-weight:bold;">${logs.message || 'Access Denied'}</td></tr>`;
+      logsTableBody.innerHTML = `<tr><td colspan="6" style="color:red; font-weight:bold;">${logs.message || 'Access Denied'}</td></tr>`;
       return;
     }
 
     if (logs.length === 0) {
-      logsTableBody.innerHTML = '<tr><td colspan="7">No logs yet</td></tr>';
+      logsTableBody.innerHTML = '<tr><td colspan="6">No logs yet</td></tr>';
       return;
     }
 
@@ -285,7 +290,6 @@ async function renderLogs() {
         <td>${log.timeOut || '—'}</td>
         <td>${log.date}</td>
         <td>${log.ip || '—'}</td>
-        <td>${log.location || '—'}</td>
         <td style="font-weight: ${log.action.includes('WARNING') ? '700' : 'normal'}; color: ${log.action.includes('WARNING') ? '#cc2222' : 'inherit'};">${log.action || '—'}</td>
       </tr>
     `).join('');
