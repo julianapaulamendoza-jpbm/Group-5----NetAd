@@ -8,7 +8,6 @@
 
 <div class="success-overlay" id="successOverlay"></div>
 
-<!-- LOGIN CARD -->
 <div class="card" id="loginCard">
   <div class="logo">
     <div class="logo-icon">
@@ -49,7 +48,6 @@
   </form>
 </div>
 
-<!-- DASHBOARD -->
 <div class="dashboard" id="dashboard">
   <div class="sidebar">
     <div class="sidebar-logo">
@@ -106,7 +104,6 @@
   </div>
 </div>
 
-<!-- MONITORING LOGS -->
 <div class="logs-page" id="logsPage">
   <div class="sidebar">
     <div class="sidebar-logo">
@@ -126,7 +123,7 @@
     <div class="topbar">
       <h1>Monitoring Logs</h1>
       <div class="topbar-btns">
-        <button onclick="renderLogs()">↺ Refresh</button>
+        <button onclick="renderLogs(true)">↺ Refresh</button>
         <button id="logoutBtn2">→ Logout</button>
      </div>
     </div>
@@ -139,12 +136,11 @@
             <th>Time Out</th>
             <th>Date</th>
             <th>IP Address</th>
-            <th>Location</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody id="logsTableBody">
-          <tr><td colspan="7">No logs yet</td></tr>
+          <tr><td colspan="6">No logs yet</td></tr>
         </tbody>
       </table>
     </div>
