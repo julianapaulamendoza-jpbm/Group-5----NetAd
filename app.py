@@ -63,10 +63,10 @@ def api_auth_login():
  
     # Secure Server-Side Verification — only these 4 admins can access
     valid_users = [
-    {'email': os.environ.get('USER1_EMAIL'), 'password': os.environ.get('USER1_PASS')},
-    {'email': os.environ.get('USER2_EMAIL'), 'password': os.environ.get('USER2_PASS')},
-    {'email': os.environ.get('USER3_EMAIL'), 'password': os.environ.get('USER3_PASS')},
-    {'email': os.environ.get('USER4_EMAIL'), 'password': os.environ.get('USER4_PASS')},
+    {'email': 'aya@securewatch.com', 'password': os.environ.get('aya@securewatch.com')},
+    {'email': 'joshua@securewatch.com', 'password': os.environ.get('joshua@securewatch.com')},
+    {'email': 'juliana@securewatch.com', 'password': os.environ.get('juliana@securewatch.com')},
+    {'email': 'alexa@securewatch.com', 'password': os.environ.get('alexa@securewatch.com')},
 ]
  
     user_match = next((u for u in valid_users if u['email'] == email and u['password'] == password), None)
