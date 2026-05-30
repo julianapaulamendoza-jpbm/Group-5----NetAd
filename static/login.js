@@ -198,36 +198,33 @@ function toggleMotion() {
   if (motionOn) addActivity('Motion Detected — Camera 01');
 }
 
-function toggleFeed() { 
-  const video = document.getElementById('camFeed');
-  if (!video || !video.srcObject) return;
+// Updated toggleFeed for CCTV img tag
+function toggleFeed() {
   feedPaused = !feedPaused;
+  const img = document.getElementById('camFeed');
   const btn = document.querySelector('.cam-controls button:last-of-type');
   if (feedPaused) {
-    video.pause();
+    img.src = '';
     btn.textContent = '▶ Resume Feed';
-    trackUserAction("Paused Feed"); 
+    trackUserAction("Paused Feed");
   } else {
-    video.play();
+    img.src = '/video_feed';
     btn.textContent = '▮▮ Pause Feed';
-    trackUserAction("Resumed Feed"); 
+    trackUserAction("Resumed Feed");
   }
 }
 
+// Updated startCamera for CCTV stream
 async function startCamera() {
   try {
     const authCheck = await fetch('/api/stream/verify');
     if (authCheck.status !== 200) {
       console.error('Backend streaming access blocked.');
-      return; 
+      return;
     }
-
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    const video = document.getElementById('camFeed');
-    video.srcObject = stream;
-    video.onloadedmetadata = () => {
-      video.play();
-    };
+    // CCTV feed loads automatically via img tag
+    const img = document.getElementById('camFeed');
+    img.src = '/video_feed';
   } catch (err) {
     console.error('Camera initialization failed:', err.name, err.message);
   }
@@ -258,7 +255,7 @@ function showLogs() {
   dashboard.classList.remove('show');
   logsPage.classList.add('show');
   trackUserAction("Opened Logs Page"); 
-  renderLogs(false); // Set to false so opening the page doesn't log a backend refresh row
+  renderLogs(false);
 }
 
 function showDashboard() {
