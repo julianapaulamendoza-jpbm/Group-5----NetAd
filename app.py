@@ -50,12 +50,8 @@ def get_real_ip():
 
 # ─── CCTV Stream: Generate frames from TP-Link RTSP feed ─────────────────────
 def generate_frames():
-    """
-    Connects to the TP-Link CCTV camera via RTSP and streams
-    frames as JPEG images to the browser.
-    """
-    rtsp_url = os.environ.get('RTSP_URL', 'rtsp://username:password@192.168.100.252/stream1')
-    camera = cv2.VideoCapture(rtsp_url)
+    stream_url = os.environ.get('STREAM_URL', 'http://admin:S3UxI1NfMDUwOA==@192.168.100.252:8080/stream/getvideo')
+    camera = cv2.VideoCapture(stream_url)
     while True:
         success, frame = camera.read()
         if not success:
