@@ -5,16 +5,13 @@ import cv2
  
 app = Flask(__name__)
  
-# Cryptographic key to sign session cookies so they cannot be tampered with
 app.secret_key = 'super_secret_secure_watch_key_group_5'
  
-# Configure database dynamically (Uses Railway configuration online, falls back to local at home)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql://postgres:group5@localhost:5432/watchmewhip')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
  
 db = SQLAlchemy(app)
  
-# Database Models
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -32,23 +29,22 @@ class Log(db.Model):
     ip_address = db.Column(db.String(45))
     action = db.Column(db.Text)
  
- 
-# ─── Helper: Extract the real client IP ──────────────────────────────────────
 def get_real_ip():
-    """
-    Checks X-Forwarded-For first (set by proxies/load balancers like Railway,
-    Nginx, Cloudflare). Falls back to the direct connection IP if not present.
-    X-Forwarded-For can be a comma-separated chain; the FIRST entry is the
-    original client.
-    """
-    forwarded_for = request.headers.get('X-Forwarded-For')
-    if forwarded_for:
-        return forwarded_for.split(',')[0].strip()
-    return request.remote_addr
-# ─────────────────────────────────────────────────────────────────────────────
+    for header in ['X-Forwarded-For', 'X-Real-IP', 'CF-Connecting-IP']:
+        value = request.headers.get(header)
+        if value:
+            return value.split(',')[0].strip()
+    ip = request.remote_addr
+    if ip in ('127.0.0.1', '::1', 'localhost'):
+        try:
+            data = request.get_json(silent=True) or {}
+            frontend_ip = data.get('ip')
+            if frontend_ip and frontend_ip not in ('127.0.0.1', '::1'):
+                return frontend_ip
+        except:
+            pass
+    return ip
 
-
-# ─── CCTV Stream: Generate frames from TP-Link RTSP feed ─────────────────────
 def generate_frames():
     stream_url = os.environ.get('STREAM_URL', 'http://admin:S3UxI1NfMDUwOA==@192.168.100.252:8080/stream/getvideo')
     camera = cv2.VideoCapture(stream_url)
@@ -60,24 +56,17 @@ def generate_frames():
         frame = buffer.tobytes()
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-# ─────────────────────────────────────────────────────────────────────────────
 
- 
-# Web View Route
 @app.route('/')
 def home():
     return render_template('index.html')
 
-# CCTV Video Feed Route — streams live feed to the dashboard
 @app.route('/video_feed')
 def video_feed():
-    # Only allow authenticated users to access the camera stream
     if not session.get('authenticated'):
         return jsonify({"status": "forbidden"}), 403
-    return Response(generate_frames(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
  
-# Hardened Authentication Endpoint
 @app.route('/api/auth/login', methods=['POST'])
 def api_auth_login():
     data = request.get_json()
@@ -85,8 +74,8 @@ def api_auth_login():
     password = data.get('password')
  
     client_ip = get_real_ip() or data.get('ip') or 'Unknown IP'
- 
-    # Secure Server-Side Verification — only these 4 admins can access
+    user_agent = request.headers.get('User-Agent', 'Unknown Device') 
+
     valid_users = [
         {'email': 'aya@securewatch.com', 'password': os.environ.get('AYA_PASS')},
         {'email': 'joshua@securewatch.com', 'password': os.environ.get('JOSHUA_PASS')},
@@ -94,14 +83,12 @@ def api_auth_login():
         {'email': 'alexa@securewatch.com', 'password': os.environ.get('ALEXA_PASS')},
     ]
  
-    # Check if the email and password match any valid user
     user_match = next((u for u in valid_users if u['email'] == email and u['password'] == password), None)
  
     if user_match:
         session['authenticated'] = True
         session['user'] = email
  
-        # Log the successful login to the database
         new_log = Log(
             user_email=email,
             time_in=data.get('timeIn'),
@@ -115,31 +102,31 @@ def api_auth_login():
  
         return jsonify({"status": "success", "log_id": new_log.id})
     else:
-        # Log the failed login attempt as a warning
         new_warning = Log(
             user_email=email or 'Blank Email Input',
             time_in=data.get('timeIn'),
             time_out=None,
             date=data.get('date'),
             ip_address=client_ip,
-            action='⚠️ WARNING: Intrusion Attempt'
+            action=f'⚠️ WARNING: Intrusion Attempt | Device: {user_agent}'  # ✅ INCLUDES DEVICE INFO
         )
         db.session.add(new_warning)
         db.session.commit()
  
-        return jsonify({"status": "unauthorized", "message": "Invalid credentials"}), 401
+        return jsonify({
+            "status": "unauthorized",
+            "message": "Invalid credentials",
+            "user_agent": user_agent  
+        }), 401
  
-# Step-by-Step History Action Logging Endpoint
 @app.route('/api/auth/track_action', methods=['POST'])
 def api_track_action():
-    # Block unauthenticated requests
     if not session.get('authenticated'):
         return jsonify({"status": "error", "message": "Unauthorized"}), 401
  
     data = request.get_json()
     client_ip = get_real_ip() or data.get('ip') or 'Unknown IP'
  
-    # Log each user action step by step
     new_step = Log(
         user_email=session.get('user'),
         time_in=data.get('time'),
@@ -153,13 +140,11 @@ def api_track_action():
  
     return jsonify({"status": "success"})
  
-# Logout Endpoint
 @app.route('/api/auth/logout', methods=['POST'])
 def api_auth_logout():
     data = request.get_json()
     client_ip = get_real_ip() or data.get('ip') or '127.0.0.1'
  
-    # Log the logout time to the database
     logout_entry = Log(
         user_email=session.get('user', 'Unknown User'),
         time_in=data.get('timeOut'),
@@ -171,18 +156,14 @@ def api_auth_logout():
     db.session.add(logout_entry)
     db.session.commit()
  
-    # Clear the session on logout
     session.clear()
     return jsonify({"status": "success"})
  
-# Guarded Logs Endpoint
 @app.route('/api/logs', methods=['GET'])
 def api_get_logs():
-    # Block unauthenticated requests
     if not session.get('authenticated'):
         return jsonify({"status": "error", "message": "Access Denied: Server-Side Block"}), 403
  
-    # Only insert log item if it comes from an explicit manual click instruction
     if request.args.get('manual') == 'true' and request.args.get('initial') != 'true':
         frontend_time = request.args.get('time', 'Unknown Time')
         frontend_date = request.args.get('date', 'Unknown Date')
@@ -198,7 +179,6 @@ def api_get_logs():
         db.session.add(refresh_log)
         db.session.commit()
  
-    # Fetch all logs from the database ordered by latest first
     all_logs = Log.query.order_by(Log.id.desc()).all()
     logs_data = []
     for log in all_logs:
@@ -212,15 +192,12 @@ def api_get_logs():
         })
     return jsonify(logs_data)
  
-# Stream Verification Endpoint
 @app.route('/api/stream/verify', methods=['GET'])
 def verify_stream_access():
-    # Only allow authenticated users to access the camera stream
     if not session.get('authenticated'):
         return jsonify({"status": "forbidden"}), 403
     return jsonify({"status": "allowed"}), 200
  
-# Create all database tables if they don't exist
 with app.app_context():
     db.create_all()
  
