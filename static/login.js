@@ -26,7 +26,6 @@ function getFormattedDateTime() {
   return { time: currentTime, date: currentDate };
 }
 
-// ✅ UPDATED: tries multiple services, rejects 127.0.0.1
 async function fetchRealNetworkContext() {
   const services = [
     { url: 'https://freeipapi.com/api/json', key: 'ipAddress' },
@@ -147,12 +146,20 @@ form.addEventListener('submit', async (e) => {
       dashboard.classList.add('show');
       startCamera();
     } else {
-      // ✅ Use already-fetched network + device info returned from backend
+      // Show intrusion attempt in the log list
       const deviceInfo = resData.user_agent || navigator.userAgent;
+      const now = new Date();
+      const time = now.toTimeString().slice(0, 8);
 
-      document.getElementById('intruderEmail').textContent = emailInput.value || 'Blank Email Input';
-      document.getElementById('intruderIp').textContent = network.ip || 'Unknown IP';
-      document.getElementById('intruderDevice').textContent = deviceInfo; // ✅ NEW
+      const intrusionLog = document.getElementById('intrusionLog');
+
+      if (intrusionLog.firstChild && intrusionLog.firstChild.textContent === 'No intrusion attempts yet') {
+        intrusionLog.innerHTML = '';
+      }
+
+      const entry = document.createElement('div');
+      entry.textContent = `${time} — ${emailInput.value || 'Blank Email'} — ${deviceInfo} — ${network.ip || 'Unknown IP'}`;
+      intrusionLog.prepend(entry);
 
       emailInput.classList.add('error-field');
       passwordInput.classList.add('error-field');
