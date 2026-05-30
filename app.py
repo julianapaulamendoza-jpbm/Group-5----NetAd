@@ -62,12 +62,12 @@ def api_auth_login():
     client_ip = get_real_ip() or data.get('ip') or 'Unknown IP'
  
     # Secure Server-Side Verification — only these 4 admins can access
-    valid_users = [
-    {'email': 'aya@securewatch.com', 'password': os.environ.get('aya@securewatch.com')},
-    {'email': 'joshua@securewatch.com', 'password': os.environ.get('joshua@securewatch.com')},
-    {'email': 'juliana@securewatch.com', 'password': os.environ.get('juliana@securewatch.com')},
-    {'email': 'alexa@securewatch.com', 'password': os.environ.get('alexa@securewatch.com')},
-]
+valid_users = [
+        {'email': 'aya@securewatch.com', 'password': os.environ.get('aya@securewatch.com')},
+        {'email': 'joshua@securewatch.com', 'password': os.environ.get('joshua@securewatch.com')},
+        {'email': 'juliana@securewatch.com', 'password': os.environ.get('juliana@securewatch.com')},
+        {'email': 'alexa@securewatch.com', 'password': os.environ.get('alexa@securewatch.com')},
+    ]
  
     user_match = next((u for u in valid_users if u['email'] == email and u['password'] == password), None)
  
