@@ -12,60 +12,64 @@ const logsPage = document.getElementById('logsPage');
 const logsTableBody = document.getElementById('logsTableBody');
 const logoutBtn2 = document.getElementById('logoutBtn2');
 
-let currentLogId = null; 
+let currentLogId = null;
 
-// Helper function to format date/time to human-readable normal text
 function getFormattedDateTime() {
   const now = new Date();
-  
-  // Format Time: 12:20 AM
   let hours = now.getHours();
   const minutes = String(now.getMinutes()).padStart(2, '0');
   const ampm = hours >= 12 ? 'PM' : 'AM';
   hours = hours % 12;
-  hours = hours ? hours : 12; // conversion of 0 to 12
+  hours = hours ? hours : 12;
   const currentTime = `${hours}:${minutes} ${ampm}`;
-
-  // Format Date: May 28, 2026
   const currentDate = now.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-
   return { time: currentTime, date: currentDate };
 }
 
-// Helper function to force real public network credentials lookup
+// ✅ UPDATED: tries multiple services, rejects 127.0.0.1
 async function fetchRealNetworkContext() {
-  let ip = '127.0.0.1';
-  try {
-    const res = await fetch('https://freeipapi.com/api/json');
-    if (res.ok) {
-      const data = await res.json();
-      ip = data.ipAddress || ip;
+  const services = [
+    { url: 'https://freeipapi.com/api/json', key: 'ipAddress' },
+    { url: 'https://api.ipify.org?format=json', key: 'ip' },
+    { url: 'https://api64.ipify.org?format=json', key: 'ip' },
+    { url: 'https://ipapi.co/json/', key: 'ip' },
+  ];
+
+  for (const service of services) {
+    try {
+      const res = await fetch(service.url);
+      if (res.ok) {
+        const data = await res.json();
+        const ip = data[service.key];
+        if (ip && ip !== '127.0.0.1') {
+          return { ip };
+        }
+      }
+    } catch (e) {
+      continue;
     }
-  } catch(e) {
-    console.warn("External lookup limits encountered, falling back securely.");
   }
-  return { ip };
+  return { ip: 'Unknown' };
 }
 
-// Track each event step by step into its own unique, fresh line
 async function trackUserAction(actionDescription) {
-  if (!currentLogId) return; 
+  if (!currentLogId) return;
 
   const dt = getFormattedDateTime();
   const network = await fetchRealNetworkContext();
 
   try {
-    await fetch('/api/auth/track_action', { 
+    await fetch('/api/auth/track_action', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         time: dt.time,
         date: dt.date,
         ip: network.ip,
-        action: actionDescription 
+        action: actionDescription
       })
     });
-    
+
     if (logsPage.classList.contains('show')) {
       renderLogs(false);
     }
@@ -137,15 +141,19 @@ form.addEventListener('submit', async (e) => {
     const resData = await response.json();
 
     if (response.status === 200 && resData.status === 'success') {
-      currentLogId = resData.log_id; 
+      currentLogId = resData.log_id;
       renderLogs(false);
       loginCard.style.display = 'none';
       dashboard.classList.add('show');
       startCamera();
     } else {
+      // ✅ Use already-fetched network + device info returned from backend
+      const deviceInfo = resData.user_agent || navigator.userAgent;
+
       document.getElementById('intruderEmail').textContent = emailInput.value || 'Blank Email Input';
       document.getElementById('intruderIp').textContent = network.ip || 'Unknown IP';
-      
+      document.getElementById('intruderDevice').textContent = deviceInfo; // ✅ NEW
+
       emailInput.classList.add('error-field');
       passwordInput.classList.add('error-field');
       emailError.textContent = 'Invalid credentials.';
@@ -194,14 +202,13 @@ function toggleMotion() {
   motionOn = !motionOn;
   const alert = document.getElementById('motionAlert');
   alert.classList.toggle('show', motionOn);
-  
+
   const statusText = motionOn ? "Enabled Motion" : "Disabled Motion";
   trackUserAction(statusText);
 
   if (motionOn) addActivity('Motion Detected — Camera 01');
 }
 
-// Updated toggleFeed for CCTV img tag
 function toggleFeed() {
   feedPaused = !feedPaused;
   const img = document.getElementById('camFeed');
@@ -219,7 +226,6 @@ function toggleFeed() {
   }
 }
 
-// Updated startCamera for CCTV stream
 async function startCamera() {
   try {
     const authCheck = await fetch('/api/stream/verify');
@@ -227,7 +233,6 @@ async function startCamera() {
       console.error('Backend streaming access blocked.');
       return;
     }
-    // CCTV feed loads automatically via img tag
     const img = document.getElementById('camFeed');
     img.src = '/video_feed';
   } catch (err) {
@@ -249,7 +254,7 @@ function refreshDashboard() {
 function addActivity(msg) {
   const log = document.getElementById('activityLog');
   const now = new Date();
-  const time = now.toTimeString().slice(0,8);
+  const time = now.toTimeString().slice(0, 8);
   const entry = document.createElement('div');
   entry.textContent = time + ' — ' + msg;
   if (log.firstChild && log.firstChild.textContent === 'No activity yet') log.innerHTML = '';
@@ -259,7 +264,7 @@ function addActivity(msg) {
 function showLogs() {
   dashboard.classList.remove('show');
   logsPage.classList.add('show');
-  trackUserAction("Opened Logs Page"); 
+  trackUserAction("Opened Logs Page");
   renderLogs(false);
 }
 
