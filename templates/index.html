@@ -71,37 +71,37 @@
         <button id="logoutBtn">→ Logout</button>
       </div>
     </div>
+    
     <div class="dashboard-content">
       <div class="dashboard-left">
         <div class="camera-feed">
-         <div class="camera-screen">
+          <div class="camera-screen">
             <div class="live-badge">LIVE</div>
             <div class="cam-label">Camera 01 — Surveillance Camera</div>
             <div class="motion-alert" id="motionAlert">⚠ Motion Detected</div>
-             <img id="camFeed" src="/video_feed" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1;">
+            <img id="camFeed" src="/video_feed" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:1;">
           </div>
-         <div class="cam-controls">
+          <div class="cam-controls">
             <button onclick="toggleMotion()">👁 Simulate Motion</button>
             <button onclick="toggleFeed()">▮▮ Pause Feed</button>
           </div>
         </div>
       </div>
+      
       <div class="dashboard-right">
-         <div class="ov-card">
-           <div class="ov-title">INTRUSION ALERTS</div>
-           <div class="ov-val green">Email: <span id="intruderEmail">—</span></div>
-           <div class="ov-val green">IP Address: <span id="intruderIp">—</span></div>
-         </div>
-      </div>
         <div class="ov-card">
+          <div class="ov-title">INTRUSION ALERTS</div>
+          <div class="ov-val green">Email: <span id="intruderEmail">—</span></div>
+          <div class="ov-val green">IP Address: <span id="intruderIp">—</span></div>
+        </div>
+        
+        <div class="ov-card" style="margin-top: 15px;">
           <div class="ov-title">Recent Activity</div>
           <div class="ov-log" id="activityLog">
             <div>No activity yet</div>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
+      </div> </div> </div>
 </div>
 
 <div class="logs-page" id="logsPage">
@@ -125,7 +125,7 @@
       <div class="topbar-btns">
         <button onclick="renderLogs(true)">↺ Refresh</button>
         <button id="logoutBtn2">→ Logout</button>
-     </div>
+      </div>
     </div>
     <div class="logs-content">
       <table class="logs-table">
