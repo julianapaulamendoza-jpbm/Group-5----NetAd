@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, Response
 from flask_sqlalchemy import SQLAlchemy
 import os
+import cv2
  
 app = Flask(__name__)
  
@@ -45,12 +46,40 @@ def get_real_ip():
         return forwarded_for.split(',')[0].strip()
     return request.remote_addr
 # ─────────────────────────────────────────────────────────────────────────────
- 
+
+
+# ─── CCTV Stream: Generate frames from TP-Link RTSP feed ─────────────────────
+def generate_frames():
+    """
+    Connects to the TP-Link CCTV camera via RTSP and streams
+    frames as JPEG images to the browser.
+    """
+    rtsp_url = os.environ.get('RTSP_URL', 'rtsp://username:password@192.168.100.252/stream1')
+    camera = cv2.VideoCapture(rtsp_url)
+    while True:
+        success, frame = camera.read()
+        if not success:
+            break
+        ret, buffer = cv2.imencode('.jpg', frame)
+        frame = buffer.tobytes()
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+# ─────────────────────────────────────────────────────────────────────────────
+
  
 # Web View Route
 @app.route('/')
 def home():
     return render_template('index.html')
+
+# CCTV Video Feed Route — streams live feed to the dashboard
+@app.route('/video_feed')
+def video_feed():
+    # Only allow authenticated users to access the camera stream
+    if not session.get('authenticated'):
+        return jsonify({"status": "forbidden"}), 403
+    return Response(generate_frames(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
  
 # Hardened Authentication Endpoint
 @app.route('/api/auth/login', methods=['POST'])
