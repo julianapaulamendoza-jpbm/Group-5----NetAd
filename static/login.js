@@ -207,10 +207,12 @@ function toggleFeed() {
     img.src = '';
     btn.textContent = '▶ Resume Feed';
     trackUserAction("Paused Feed");
+    addActivity('Paused Feed — Camera 01');
   } else {
     img.src = '/video_feed';
     btn.textContent = '▮▮ Pause Feed';
     trackUserAction("Resumed Feed");
+    addActivity('Resumed Feed — Camera 01');
   }
 }
 
