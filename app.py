@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 app.secret_key = 'super_secret_secure_watch_key_group_5'
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql://postgres:watchmewhipgroup5@db.sxpuppfcqfgxszwerazn.supabase.co:5432/postgres')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'postgresql://postgres:group5@localhost:5432/watchmewhip')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
