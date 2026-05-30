@@ -143,7 +143,6 @@ form.addEventListener('submit', async (e) => {
       dashboard.classList.add('show');
       startCamera();
     } else {
-      const network = await fetchRealNetworkContext();
       document.getElementById('intruderEmail').textContent = emailInput.value || 'Blank Email Input';
       document.getElementById('intruderIp').textContent = network.ip || 'Unknown IP';
       
