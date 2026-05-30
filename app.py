@@ -62,19 +62,21 @@ def api_auth_login():
     client_ip = get_real_ip() or data.get('ip') or 'Unknown IP'
  
     # Secure Server-Side Verification — only these 4 admins can access
-valid_users = [
+    valid_users = [
         {'email': 'aya@securewatch.com', 'password': os.environ.get('AYA_PASS')},
         {'email': 'joshua@securewatch.com', 'password': os.environ.get('JOSHUA_PASS')},
         {'email': 'juliana@securewatch.com', 'password': os.environ.get('JULIANA_PASS')},
         {'email': 'alexa@securewatch.com', 'password': os.environ.get('ALEXA_PASS')},
     ]
  
+    # Check if the email and password match any valid user
     user_match = next((u for u in valid_users if u['email'] == email and u['password'] == password), None)
  
     if user_match:
         session['authenticated'] = True
         session['user'] = email
  
+        # Log the successful login to the database
         new_log = Log(
             user_email=email,
             time_in=data.get('timeIn'),
@@ -88,6 +90,7 @@ valid_users = [
  
         return jsonify({"status": "success", "log_id": new_log.id})
     else:
+        # Log the failed login attempt as a warning
         new_warning = Log(
             user_email=email or 'Blank Email Input',
             time_in=data.get('timeIn'),
@@ -104,12 +107,14 @@ valid_users = [
 # Step-by-Step History Action Logging Endpoint
 @app.route('/api/auth/track_action', methods=['POST'])
 def api_track_action():
+    # Block unauthenticated requests
     if not session.get('authenticated'):
         return jsonify({"status": "error", "message": "Unauthorized"}), 401
  
     data = request.get_json()
     client_ip = get_real_ip() or data.get('ip') or 'Unknown IP'
  
+    # Log each user action step by step
     new_step = Log(
         user_email=session.get('user'),
         time_in=data.get('time'),
@@ -129,6 +134,7 @@ def api_auth_logout():
     data = request.get_json()
     client_ip = get_real_ip() or data.get('ip') or '127.0.0.1'
  
+    # Log the logout time to the database
     logout_entry = Log(
         user_email=session.get('user', 'Unknown User'),
         time_in=data.get('timeOut'),
@@ -140,12 +146,14 @@ def api_auth_logout():
     db.session.add(logout_entry)
     db.session.commit()
  
+    # Clear the session on logout
     session.clear()
     return jsonify({"status": "success"})
  
 # Guarded Logs Endpoint
 @app.route('/api/logs', methods=['GET'])
 def api_get_logs():
+    # Block unauthenticated requests
     if not session.get('authenticated'):
         return jsonify({"status": "error", "message": "Access Denied: Server-Side Block"}), 403
  
@@ -153,7 +161,7 @@ def api_get_logs():
     if request.args.get('manual') == 'true' and request.args.get('initial') != 'true':
         frontend_time = request.args.get('time', 'Unknown Time')
         frontend_date = request.args.get('date', 'Unknown Date')
-        
+ 
         refresh_log = Log(
             user_email=session.get('user', 'Unknown User'),
             time_in=frontend_time,
@@ -165,6 +173,7 @@ def api_get_logs():
         db.session.add(refresh_log)
         db.session.commit()
  
+    # Fetch all logs from the database ordered by latest first
     all_logs = Log.query.order_by(Log.id.desc()).all()
     logs_data = []
     for log in all_logs:
@@ -181,10 +190,12 @@ def api_get_logs():
 # Stream Verification Endpoint
 @app.route('/api/stream/verify', methods=['GET'])
 def verify_stream_access():
+    # Only allow authenticated users to access the camera stream
     if not session.get('authenticated'):
         return jsonify({"status": "forbidden"}), 403
     return jsonify({"status": "allowed"}), 200
  
+# Create all database tables if they don't exist
 with app.app_context():
     db.create_all()
  
