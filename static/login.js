@@ -143,15 +143,9 @@ form.addEventListener('submit', async (e) => {
       dashboard.classList.add('show');
       startCamera();
     } else {
-      const intruderTypedEmail = emailInput.value || 'Blank Email Input';
-      const intruderIpAddress = network.ip || 'Unknown IP';
-
-      // Inject the data directly into your design placeholders
-      const emailPlaceholder = document.getElementById('intruderEmail');
-      const ipPlaceholder = document.getElementById('intruderIp');
-
-      if (emailPlaceholder) emailPlaceholder.textContent = intruderTypedEmail;
-      if (ipPlaceholder) ipPlaceholder.textContent = intruderIpAddress;
+      const network = await fetchRealNetworkContext();
+      document.getElementById('intruderEmail').textContent = emailInput.value || 'Blank Email Input';
+      document.getElementById('intruderIp').textContent = network.ip || 'Unknown IP';
       
       emailInput.classList.add('error-field');
       passwordInput.classList.add('error-field');
