@@ -1,9 +1,11 @@
 from flask import Flask, render_template, request, jsonify, session, Response
 from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
 import os
 import cv2
 
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
 
 app.secret_key = 'super_secret_secure_watch_key_group_5'
 
@@ -29,10 +31,10 @@ class Log(db.Model):
     ip_address = db.Column(db.String(45))
     action = db.Column(db.Text)
 
+
 def parse_user_agent(ua_string):
     ua = ua_string.lower()
 
-    # Detect OS
     if 'windows' in ua:
         os_name = 'Windows'
     elif 'android' in ua:
@@ -46,7 +48,6 @@ def parse_user_agent(ua_string):
     else:
         os_name = 'Unknown OS'
 
-    # Detect Browser
     if 'edg/' in ua:
         browser = 'Edge'
     elif 'opr/' in ua or 'opera' in ua:
@@ -61,6 +62,7 @@ def parse_user_agent(ua_string):
         browser = 'Unknown Browser'
 
     return f'{browser} on {os_name}'
+
 
 def get_real_ip():
     for header in ['X-Forwarded-For', 'X-Real-IP', 'CF-Connecting-IP']:
@@ -104,6 +106,29 @@ def video_feed():
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
+# create hashed users in Supabase
+@app.route('/api/setup', methods=['GET'])
+def setup_users():
+    users = [
+        {'email': 'aya@securewatch.com', 'password': os.environ.get('AYA_PASS')},
+        {'email': 'joshua@securewatch.com', 'password': os.environ.get('JOSHUA_PASS')},
+        {'email': 'juliana@securewatch.com', 'password': os.environ.get('JULIANA_PASS')},
+        {'email': 'alexa@securewatch.com', 'password': os.environ.get('ALEXA_PASS')},
+    ]
+    for u in users:
+        existing = User.query.filter_by(username=u['email']).first()
+        if not existing:
+            hashed = bcrypt.generate_password_hash(u['password']).decode('utf-8')
+            new_user = User(
+                username=u['email'],
+                password_hash=hashed,
+                role='admin'
+            )
+            db.session.add(new_user)
+    db.session.commit()
+    return jsonify({"status": "users created successfully"})
+
+
 @app.route('/api/auth/login', methods=['POST'])
 def api_auth_login():
     data = request.get_json()
@@ -112,18 +137,11 @@ def api_auth_login():
 
     client_ip = get_real_ip() or data.get('ip') or 'Unknown IP'
     user_agent = request.headers.get('User-Agent', 'Unknown Device')
-    device_info = parse_user_agent(user_agent)  
+    device_info = parse_user_agent(user_agent)
 
-    valid_users = [
-        {'email': 'aya@securewatch.com', 'password': os.environ.get('AYA_PASS')},
-        {'email': 'joshua@securewatch.com', 'password': os.environ.get('JOSHUA_PASS')},
-        {'email': 'juliana@securewatch.com', 'password': os.environ.get('JULIANA_PASS')},
-        {'email': 'alexa@securewatch.com', 'password': os.environ.get('ALEXA_PASS')},
-    ]
+    user_match = User.query.filter_by(username=email).first()
 
-    user_match = next((u for u in valid_users if u['email'] == email and u['password'] == password), None)
-
-    if user_match:
+    if user_match and bcrypt.check_password_hash(user_match.password_hash, password):
         session['authenticated'] = True
         session['user'] = email
 
@@ -146,7 +164,7 @@ def api_auth_login():
             time_out=None,
             date=data.get('date'),
             ip_address=client_ip,
-            action=f'⚠️ WARNING: Intrusion Attempt | Device: {device_info}' 
+            action=f'⚠️ WARNING: Intrusion Attempt | Device: {device_info}'
         )
         db.session.add(new_warning)
         db.session.commit()
@@ -154,7 +172,7 @@ def api_auth_login():
         return jsonify({
             "status": "unauthorized",
             "message": "Invalid credentials",
-            "user_agent": device_info 
+            "user_agent": device_info
         }), 401
 
 
