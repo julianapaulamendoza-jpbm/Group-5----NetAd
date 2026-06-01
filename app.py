@@ -105,30 +105,6 @@ def video_feed():
         return jsonify({"status": "forbidden"}), 403
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-
-# create hashed users in Supabase
-@app.route('/api/setup', methods=['GET'])
-def setup_users():
-    users = [
-        {'email': 'aya@securewatch.com', 'password': os.environ.get('AYA_PASS')},
-        {'email': 'joshua@securewatch.com', 'password': os.environ.get('JOSHUA_PASS')},
-        {'email': 'juliana@securewatch.com', 'password': os.environ.get('JULIANA_PASS')},
-        {'email': 'alexa@securewatch.com', 'password': os.environ.get('ALEXA_PASS')},
-    ]
-    for u in users:
-        existing = User.query.filter_by(username=u['email']).first()
-        if not existing:
-            hashed = bcrypt.generate_password_hash(u['password']).decode('utf-8')
-            new_user = User(
-                username=u['email'],
-                password_hash=hashed,
-                role='admin'
-            )
-            db.session.add(new_user)
-    db.session.commit()
-    return jsonify({"status": "users created successfully"})
-
-
 @app.route('/api/auth/login', methods=['POST'])
 def api_auth_login():
     data = request.get_json()
