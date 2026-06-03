@@ -82,7 +82,7 @@ def get_real_ip():
 
 
 def generate_frames():
-    stream_url = os.environ.get('STREAM_URL', 'http://admin:S3UxI1NfMDUwOA==@192.168.100.252:8080/stream/getvideo')
+    stream_url = os.environ.get('STREAM_URL', 'http://admin:ExtraLex%2325@223.25.63.71:8080/stream/getvideo')
     camera = cv2.VideoCapture(stream_url)
     while True:
         success, frame = camera.read()
